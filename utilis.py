@@ -34,7 +34,7 @@ def tensor_to_image(tensor):
 
 def load_image_from_upload(uploaded_file, size=512):
     image = Image.open(uploaded_file).convert('RGB')
-    
+     
     transform = transforms.Compose([
         transforms.Resize((size, size)),
         transforms.ToTensor(),
