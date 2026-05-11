@@ -7,7 +7,7 @@ from utils import load_image_from_upload, tensor_to_image
 from style_transfer import run_style_transfer
 
 st.set_page_config(
-    page_title="Picassify — Neural Style Transfer",
+    page_title="PICASSIFY",
     page_icon="🎨",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -15,412 +15,465 @@ st.set_page_config(
 
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=IM+Fell+English:ital@0;1&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Barlow+Condensed:wght@300;400;600;800;900&display=swap');
 
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     html, body, [data-testid="stAppViewContainer"] {
-        background-color: #1a1209;
+        background-color: #0d0d0d;
         background-image:
-            radial-gradient(ellipse at 20% 20%, rgba(139, 90, 20, 0.15) 0%, transparent 60%),
-            radial-gradient(ellipse at 80% 80%, rgba(101, 55, 0, 0.12) 0%, transparent 60%),
-            url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-        font-family: 'Cormorant Garamond', serif;
-        color: #e8d5a3;
-        min-height: 100vh;
+            linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+        background-size: 60px 60px;
+        font-family: 'Space Mono', monospace;
+        color: #f0f0f0;
     }
 
     [data-testid="stMainBlockContainer"] {
-        padding: 2rem 2rem;
-        max-width: 1300px;
+        padding: 0;
+        max-width: 100%;
     }
 
-    .header-ornament {
-        text-align: center;
-        color: #c9a84c;
-        font-size: 1.4rem;
-        letter-spacing: 0.8rem;
+    .hero {
+        background: #0d0d0d;
+        border-bottom: 4px solid #ff2d00;
+        padding: 3rem 4rem 2rem 4rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero::before {
+        content: 'ART';
+        position: absolute;
+        right: -2rem;
+        top: -2rem;
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 18rem;
+        color: rgba(255, 45, 0, 0.04);
+        line-height: 1;
+        pointer-events: none;
+        user-select: none;
+    }
+
+    .issue-tag {
+        font-family: 'Space Mono', monospace;
+        font-size: 0.7rem;
+        color: #ff2d00;
+        letter-spacing: 0.3rem;
+        text-transform: uppercase;
         margin-bottom: 0.5rem;
-        opacity: 0.7;
+        border-left: 3px solid #ff2d00;
+        padding-left: 0.8rem;
     }
 
     .main-title {
-        font-family: 'Playfair Display', serif;
-        font-size: 5rem;
-        font-weight: 700;
-        text-align: center;
-        color: #f0d080;
-        letter-spacing: 0.15rem;
-        line-height: 1;
-        text-shadow:
-            0 0 60px rgba(201, 168, 76, 0.4),
-            0 2px 4px rgba(0,0,0,0.8);
-        margin-bottom: 0.3rem;
-    }
-
-    .main-title span {
-        font-style: italic;
-        color: #c9a84c;
-    }
-
-    .subtitle {
-        font-family: 'IM Fell English', serif;
-        font-style: italic;
-        text-align: center;
-        font-size: 1.3rem;
-        color: #b8986a;
-        letter-spacing: 0.1rem;
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 10rem;
+        color: #f0f0f0;
+        line-height: 0.85;
+        letter-spacing: 0.05rem;
         margin-bottom: 0.5rem;
     }
 
-    .divider {
-        text-align: center;
-        color: #c9a84c;
-        font-size: 1.2rem;
-        letter-spacing: 0.5rem;
-        margin: 1.5rem 0;
-        opacity: 0.6;
+    .main-title span {
+        color: #ff2d00;
+        display: block;
     }
 
-    .divider::before,
-    .divider::after {
-        content: '————————————————';
-        opacity: 0.3;
+    .tagline {
+        font-family: 'Barlow Condensed', sans-serif;
+        font-weight: 300;
+        font-size: 1.3rem;
+        color: #888;
+        letter-spacing: 0.2rem;
+        text-transform: uppercase;
+        margin-top: 0.5rem;
+        border-top: 1px solid #333;
+        padding-top: 1rem;
+        max-width: 600px;
     }
 
-    .upload-section {
-        background: linear-gradient(135deg,
-            rgba(40, 28, 10, 0.8) 0%,
-            rgba(30, 20, 5, 0.9) 100%);
-        border: 1px solid rgba(201, 168, 76, 0.25);
-        border-radius: 4px;
-        padding: 2rem;
-        position: relative;
-        box-shadow:
-            0 4px 30px rgba(0,0,0,0.5),
-            inset 0 1px 0 rgba(201, 168, 76, 0.1);
+    .content-wrap {
+        padding: 3rem 4rem;
     }
 
-    .upload-section::before {
+    .section-label {
+        font-family: 'Space Mono', monospace;
+        font-size: 0.65rem;
+        color: #ff2d00;
+        letter-spacing: 0.4rem;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .section-label::after {
         content: '';
-        position: absolute;
-        top: 6px;
-        left: 6px;
-        right: 6px;
-        bottom: 6px;
-        border: 1px solid rgba(201, 168, 76, 0.1);
-        border-radius: 2px;
-        pointer-events: none;
+        flex: 1;
+        height: 1px;
+        background: #333;
     }
 
-    .corner-ornament {
-        position: absolute;
-        width: 20px;
-        height: 20px;
-        border-color: #c9a84c;
-        border-style: solid;
-        opacity: 0.5;
+    .upload-block {
+        border: 2px solid #222;
+        padding: 0;
+        position: relative;
+        background: #111;
+        transition: border-color 0.2s;
     }
 
-    .section-title {
-        font-family: 'Playfair Display', serif;
-        font-size: 1.6rem;
-        font-weight: 400;
-        color: #f0d080;
-        text-align: center;
-        margin-bottom: 1.2rem;
+    .upload-block:hover {
+        border-color: #ff2d00;
+    }
+
+    .upload-header {
+        background: #1a1a1a;
+        border-bottom: 1px solid #222;
+        padding: 0.8rem 1.2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .upload-num {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 3rem;
+        color: #ff2d00;
+        line-height: 1;
+    }
+
+    .upload-label {
+        font-family: 'Barlow Condensed', sans-serif;
+        font-weight: 800;
+        font-size: 1.4rem;
+        letter-spacing: 0.15rem;
+        color: #f0f0f0;
+        text-transform: uppercase;
+    }
+
+    .upload-desc {
+        font-family: 'Space Mono', monospace;
+        font-size: 0.65rem;
+        color: #555;
+        text-transform: uppercase;
         letter-spacing: 0.1rem;
     }
 
-    .section-title span {
-        font-style: italic;
-        color: #c9a84c;
+    .upload-inner {
+        padding: 1.5rem;
     }
 
-    .instruction-text {
-        font-family: 'IM Fell English', serif;
-        font-style: italic;
-        text-align: center;
-        color: #8a7050;
-        font-size: 1rem;
-        margin-bottom: 1rem;
-    }
-
-    .settings-panel {
-        background: linear-gradient(135deg,
-            rgba(30, 20, 5, 0.9) 0%,
-            rgba(25, 15, 3, 0.95) 100%);
-        border: 1px solid rgba(201, 168, 76, 0.2);
-        border-radius: 4px;
+    .settings-bar {
+        background: #111;
+        border: 2px solid #222;
+        border-left: 4px solid #ff2d00;
         padding: 2rem;
-        margin: 1.5rem 0;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        margin: 2.5rem 0;
     }
 
-    .result-panel {
-        background: linear-gradient(135deg,
-            rgba(35, 23, 7, 0.9) 0%,
-            rgba(25, 15, 3, 0.95) 100%);
-        border: 1px solid rgba(201, 168, 76, 0.3);
-        border-radius: 4px;
-        padding: 2.5rem;
+    .settings-title {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 2rem;
+        color: #f0f0f0;
+        letter-spacing: 0.1rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .settings-sub {
+        font-family: 'Space Mono', monospace;
+        font-size: 0.65rem;
+        color: #555;
+        letter-spacing: 0.2rem;
+        text-transform: uppercase;
+        margin-bottom: 1.5rem;
+    }
+
+
+    .result-title {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 3rem;
+        color: #f0f0f0;
         text-align: center;
-        box-shadow:
-            0 8px 40px rgba(0,0,0,0.6),
-            0 0 80px rgba(201, 168, 76, 0.05);
+        letter-spacing: 0.2rem;
+        margin-bottom: 1.5rem;
     }
 
-    .quote-box {
-        border-left: 2px solid #c9a84c;
-        padding: 1rem 1.5rem;
-        margin: 2rem auto;
-        max-width: 600px;
-        opacity: 0.7;
+    .ticker {
+        background: #ff2d00;
+        padding: 0.4rem 4rem;
+        overflow: hidden;
+        white-space: nowrap;
+        margin: 2rem 0;
     }
 
-    .quote-text {
-        font-family: 'IM Fell English', serif;
-        font-style: italic;
-        font-size: 1.1rem;
-        color: #b8986a;
-        text-align: center;
+    .ticker-text {
+        font-family: 'Barlow Condensed', sans-serif;
+        font-weight: 600;
+        font-size: 0.85rem;
+        letter-spacing: 0.3rem;
+        color: #0d0d0d;
+        text-transform: uppercase;
+        animation: ticker 20s linear infinite;
+        display: inline-block;
     }
 
-    .quote-author {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 0.9rem;
-        color: #8a7050;
-        text-align: center;
-        margin-top: 0.5rem;
-        letter-spacing: 0.15rem;
+    @keyframes ticker {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
     }
 
-    footer-text {
-        text-align: center;
-        color: #5a4a30;
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 0.9rem;
-        margin-top: 3rem;
-        padding-top: 1.5rem;
-        border-top: 1px solid rgba(201, 168, 76, 0.1);
+    .footer-bar {
+        background: #111;
+        border-top: 4px solid #ff2d00;
+        padding: 1.5rem 4rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 4rem;
+    }
+
+    .footer-left {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 1.5rem;
+        color: #f0f0f0;
+        letter-spacing: 0.2rem;
+    }
+
+    .footer-right {
+        font-family: 'Space Mono', monospace;
+        font-size: 0.65rem;
+        color: #555;
+        text-align: right;
+        letter-spacing: 0.1rem;
     }
 
     [data-testid="stButton"] button {
-        background: linear-gradient(135deg, #8b6914 0%, #c9a84c 50%, #8b6914 100%) !important;
-        color: #1a1209 !important;
+        background: #ff2d00 !important;
+        color: #0d0d0d !important;
         border: none !important;
-        border-radius: 2px !important;
-        font-family: 'Playfair Display', serif !important;
-        font-size: 1.1rem !important;
-        font-weight: 700 !important;
-        letter-spacing: 0.2rem !important;
-        padding: 0.9rem 2rem !important;
+        border-radius: 0 !important;
+        font-family: 'Bebas Neue', sans-serif !important;
+        font-size: 1.5rem !important;
+        letter-spacing: 0.3rem !important;
+        padding: 1rem 2rem !important;
+        width: 100% !important;
+        transition: all 0.2s ease !important;
         text-transform: uppercase !important;
-        transition: all 0.4s ease !important;
-        box-shadow:
-            0 4px 20px rgba(139, 105, 20, 0.4),
-            inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
     }
 
     [data-testid="stButton"] button:hover {
-        transform: translateY(-2px) !important;
-        box-shadow:
-            0 8px 30px rgba(201, 168, 76, 0.5),
-            inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+        background: #f0f0f0 !important;
+        transform: translateY(-3px) !important;
+        box-shadow: 6px 6px 0px #ff2d00 !important;
     }
 
     [data-testid="stButton"] button:active {
         transform: translateY(0) !important;
-    }
-
-    [data-testid="stSlider"] {
-        padding: 0.5rem 0;
-    }
-
-    [data-testid="stSlider"] label {
-        font-family: 'Cormorant Garamond', serif !important;
-        color: #b8986a !important;
-        font-size: 1rem !important;
-    }
-
-    .stProgress > div > div {
-        background: linear-gradient(90deg, #8b6914, #c9a84c) !important;
-    }
-
-    [data-testid="stFileUploader"] {
-        background: rgba(201, 168, 76, 0.05) !important;
-        border: 1px dashed rgba(201, 168, 76, 0.3) !important;
-        border-radius: 4px !important;
-    }
-
-    [data-testid="stFileUploader"] label {
-        color: #b8986a !important;
-        font-family: 'Cormorant Garamond', serif !important;
-    }
-
-    [data-testid="stImage"] img {
-        border: 1px solid rgba(201, 168, 76, 0.2) !important;
-        border-radius: 2px !important;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
-    }
-
-    h1, h2, h3 {
-        font-family: 'Playfair Display', serif !important;
-        color: #f0d080 !important;
-    }
-
-    p, label {
-        font-family: 'Cormorant Garamond', serif !important;
-        color: #b8986a !important;
-    }
-
-    .stSelectbox label {
-        color: #b8986a !important;
-        font-family: 'Cormorant Garamond', serif !important;
+        box-shadow: none !important;
     }
 
     [data-testid="stDownloadButton"] button {
         background: transparent !important;
-        color: #c9a84c !important;
-        border: 1px solid rgba(201, 168, 76, 0.4) !important;
-        border-radius: 2px !important;
-        font-family: 'Cormorant Garamond', serif !important;
-        letter-spacing: 0.1rem !important;
+        color: #ff2d00 !important;
+        border: 2px solid #ff2d00 !important;
+        border-radius: 0 !important;
+        font-family: 'Space Mono', monospace !important;
+        font-size: 0.8rem !important;
+        letter-spacing: 0.2rem !important;
+        transition: all 0.2s !important;
     }
 
     [data-testid="stDownloadButton"] button:hover {
-        background: rgba(201, 168, 76, 0.1) !important;
-        border-color: #c9a84c !important;
+        background: #ff2d00 !important;
+        color: #0d0d0d !important;
+        box-shadow: 4px 4px 0px #ffffff !important;
+    }
+
+    [data-testid="stSlider"] label p {
+        font-family: 'Space Mono', monospace !important;
+        font-size: 0.7rem !important;
+        color: #888 !important;
+        letter-spacing: 0.15rem !important;
+        text-transform: uppercase !important;
+    }
+
+    [data-testid="stFileUploader"] {
+        background: transparent !important;
+    }
+
+    [data-testid="stFileUploader"] label {
+        color: #555 !important;
+        font-family: 'Space Mono', monospace !important;
+        font-size: 0.7rem !important;
+    }
+
+    [data-testid="stImage"] img {
+        border: 1px solid #222 !important;
+    }
+
+    .stProgress > div > div {
+        background: #ff2d00 !important;
+        border-radius: 0 !important;
+    }
+
+    .stProgress > div {
+        background: #1a1a1a !important;
+        border-radius: 0 !important;
+    }
+
+    div[data-testid="stSelectSlider"] label p {
+        font-family: 'Space Mono', monospace !important;
+        font-size: 0.7rem !important;
+        color: #888 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.15rem !important;
     }
     </style>
 """, unsafe_allow_html=True)
 
-
-st.markdown("<div class='header-ornament'>✦ ✦ ✦</div>", unsafe_allow_html=True)
-st.markdown("<h1 class='main-title'>Picass<span>ify</span></h1>", unsafe_allow_html=True)
-st.markdown("<p class='subtitle'>Neural Artistry — Where Intelligence Meets the Canvas</p>", unsafe_allow_html=True)
-st.markdown("<div class='divider'>⬧</div>", unsafe_allow_html=True)
-
 st.markdown("""
-    <div class='quote-box'>
-        <p class='quote-text'>"Every artist dips his brush in his own soul,<br>and paints his own nature into his pictures."</p>
-        <p class='quote-author'>— Henry Ward Beecher</p>
+    <div class='hero'>
+        <div class='issue-tag'>Neural Style Transfer Engine · Vol. 01</div>
+        <div class='main-title'>
+            PICASS
+            <span>IFY</span>
+        </div>
+        <div class='tagline'>Upload. Transmute. Collect your Masterpiece.</div>
     </div>
 """, unsafe_allow_html=True)
 
-st.markdown("<div class='divider'>⬧</div>", unsafe_allow_html=True)
+st.markdown("""
+    <div class='ticker'>
+        <span class='ticker-text'>
+            NEURAL STYLE TRANSFER &nbsp;·&nbsp; VGG19 ARCHITECTURE &nbsp;·&nbsp;
+            GRAM MATRIX &nbsp;·&nbsp; CONTENT LOSS &nbsp;·&nbsp; STYLE LOSS &nbsp;·&nbsp;
+            PYTORCH ENGINE &nbsp;·&nbsp; UPLOAD YOUR PHOTO &nbsp;·&nbsp;
+            CHOOSE YOUR STYLE &nbsp;·&nbsp; GENERATE ART &nbsp;·&nbsp;
+            NEURAL STYLE TRANSFER &nbsp;·&nbsp; VGG19 ARCHITECTURE &nbsp;·&nbsp;
+            GRAM MATRIX &nbsp;·&nbsp; CONTENT LOSS &nbsp;·&nbsp; STYLE LOSS &nbsp;·&nbsp;
+            PYTORCH ENGINE &nbsp;·&nbsp; UPLOAD YOUR PHOTO &nbsp;·&nbsp;
+            CHOOSE YOUR STYLE &nbsp;·&nbsp; GENERATE ART &nbsp;·&nbsp;
+        </span>
+    </div>
+""", unsafe_allow_html=True)
+
+st.markdown("<div class='content-wrap'>", unsafe_allow_html=True)
+
+st.markdown("<div class='section-label'>01 — Input</div>", unsafe_allow_html=True)
 
 col1, col2 = st.columns(2, gap="large")
 
 with col1:
-    st.markdown("<div class='upload-section'>", unsafe_allow_html=True)
-    st.markdown("<h2 class='section-title'><span>I.</span> The Subject</h2>", unsafe_allow_html=True)
-    st.markdown("<p class='instruction-text'>Upload the photograph to be transformed</p>", unsafe_allow_html=True)
+    st.markdown("""
+        <div class='upload-block'>
+            <div class='upload-header'>
+                <div>
+                    <div class='upload-label'>The Subject</div>
+                    <div class='upload-desc'>Your photograph</div>
+                </div>
+                <div class='upload-num'>01</div>
+            </div>
+            <div class='upload-inner'>
+    """, unsafe_allow_html=True)
     content_file = st.file_uploader(
-        "Content Image",
+        "Upload content image",
         type=["jpg", "jpeg", "png"],
         key="content",
         label_visibility="collapsed"
     )
     if content_file:
         st.image(content_file, use_container_width=True)
-    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</div></div>", unsafe_allow_html=True)
 
 with col2:
-    st.markdown("<div class='upload-section'>", unsafe_allow_html=True)
-    st.markdown("<h2 class='section-title'><span>II.</span> The Muse</h2>", unsafe_allow_html=True)
-    st.markdown("<p class='instruction-text'>Upload the painting whose soul shall be borrowed</p>", unsafe_allow_html=True)
+    st.markdown("""
+        <div class='upload-block'>
+            <div class='upload-header'>
+                <div>
+                    <div class='upload-label'>The Style</div>
+                    <div class='upload-desc'>Your painting / artwork</div>
+                </div>
+                <div class='upload-num'>02</div>
+            </div>
+            <div class='upload-inner'>
+    """, unsafe_allow_html=True)
     style_file = st.file_uploader(
-        "Style Image",
+        "Upload style image",
         type=["jpg", "jpeg", "png"],
         key="style",
         label_visibility="collapsed"
     )
     if style_file:
         st.image(style_file, use_container_width=True)
-    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</div></div>", unsafe_allow_html=True)
 
-st.markdown("<div class='divider'>⬧</div>", unsafe_allow_html=True)
+st.markdown("""
+    <div class='settings-bar'>
+        <div class='settings-title'>Parameters</div>
+        <div class='settings-sub'>Configure the style transfer engine</div>
+""", unsafe_allow_html=True)
 
-st.markdown("<div class='settings-panel'>", unsafe_allow_html=True)
-st.markdown("<h2 class='section-title'><span>III.</span> The Alchemy</h2>", unsafe_allow_html=True)
-st.markdown("<p class='instruction-text'>Adjust the parameters of artistic transmutation</p>", unsafe_allow_html=True)
+s1, s2, s3 = st.columns(3)
 
-set_col1, set_col2, set_col3 = st.columns(3)
-
-with set_col1:
+with s1:
     steps = st.slider(
-        "Iterations of Refinement",
+        "ITERATIONS",
         min_value=100,
         max_value=600,
         value=300,
-        step=50,
-        help="More iterations = more stylized result (but slower)"
+        step=50
     )
 
-with set_col2:
+with s2:
     style_weight = st.select_slider(
-        "Strength of Style",
+        "STYLE STRENGTH",
         options=[100000, 500000, 1000000, 5000000, 10000000],
         value=1000000,
         format_func=lambda x: {
-            100000: "Subtle",
-            500000: "Moderate",
-            1000000: "Strong",
-            5000000: "Intense",
-            10000000: "Overwhelming"
-        }[x],
-        help="Controls how strongly the painting's style is applied"
+            100000:   "Subtle",
+            500000:   "Moderate",
+            1000000:  "Strong",
+            5000000:  "Intense",
+            10000000: "Max"
+        }[x]
     )
 
-with set_col3:
+with s3:
     image_size = st.select_slider(
-        "Canvas Resolution",
+        "CANVAS SIZE",
         options=[256, 384, 512],
         value=256,
-        format_func=lambda x: {
-            256: "256 × 256",
-            384: "384 × 384",
-            512: "512 × 512"
-        }[x],
-        help="Higher resolution = better quality but much slower on CPU"
+        format_func=lambda x: f"{x} × {x}"
     )
 
 st.markdown("</div>", unsafe_allow_html=True)
 
-st.markdown("<div class='divider'>⬧</div>", unsafe_allow_html=True)
+st.markdown("<div class='section-label'>02 — Generate</div>", unsafe_allow_html=True)
 
-_, btn_col, _ = st.columns([1, 2, 1])
-with btn_col:
-    generate_btn = st.button("✦  Begin the Transformation  ✦", use_container_width=True)
+generate_btn = st.button("EXECUTE STYLE TRANSFER", use_container_width=True)
 
 if generate_btn:
     if not content_file or not style_file:
-        st.warning("Please upload both a content image and a style image to proceed.")
+        st.error("ERROR — Both images required to proceed.")
     else:
-        st.markdown("<div class='divider'>⬧</div>", unsafe_allow_html=True)
-        st.markdown("<div class='result-panel'>", unsafe_allow_html=True)
-        st.markdown("<h2 class='section-title'><span>IV.</span> The Masterpiece Emerges</h2>", unsafe_allow_html=True)
+        # st.markdown("<div class='result-block'>", unsafe_allow_html=True)
+        st.markdown("<div class='result-title'>GENERATING ARTWORK</div>", unsafe_allow_html=True)
 
         progress_bar = st.progress(0)
         status_text  = st.empty()
 
         def progress_callback(step, total, total_loss, c_loss, s_loss):
-            progress = step / total
-            progress_bar.progress(progress)
+            progress_bar.progress(step / total)
             status_text.markdown(
-                f"<p style='text-align:center; font-family: IM Fell English, serif; "
-                f"font-style:italic; color:#8a7050;'>"
-                f"Refining... Step {step} of {total} &nbsp;|&nbsp; "
-                f"Loss: {total_loss:.2f}</p>",
+                f"<p style='font-family: Space Mono, monospace; font-size: 0.7rem;"
+                f"color: #555; letter-spacing: 0.15rem; text-transform: uppercase;'>"
+                f"STEP {step}/{total} &nbsp;·&nbsp; LOSS: {total_loss:.2f}</p>",
                 unsafe_allow_html=True
             )
 
-        with st.spinner("The canvas is being painted..."):
+        with st.spinner(""):
             content_tensor = load_image_from_upload(content_file, size=image_size)
             style_tensor   = load_image_from_upload(style_file,   size=image_size)
 
@@ -438,16 +491,15 @@ if generate_btn:
 
         result_image = tensor_to_image(generated)
 
-        st.markdown("<br>", unsafe_allow_html=True)
-        st.image(result_image, caption="Your Generated Artwork", use_container_width=True)
+        st.markdown("<div class='section-label'>03 — Output</div>", unsafe_allow_html=True)
+        st.image(result_image, caption="GENERATED ARTWORK", use_container_width=True)
 
         buf = io.BytesIO()
         result_image.save(buf, format="PNG")
         buf.seek(0)
 
-        st.markdown("<br>", unsafe_allow_html=True)
         st.download_button(
-            label="⬇  Save Your Masterpiece",
+            label="DOWNLOAD ARTWORK",
             data=buf,
             file_name="picassify_artwork.png",
             mime="image/png",
@@ -456,16 +508,15 @@ if generate_btn:
 
         st.markdown("</div>", unsafe_allow_html=True)
 
-st.markdown("<div class='divider'>⬧</div>", unsafe_allow_html=True)
+st.markdown("</div>", unsafe_allow_html=True)
+
 st.markdown("""
-    <div style='text-align:center; padding: 2rem 0;'>
-        <p style='font-family: IM Fell English, serif; font-style:italic;
-                  color:#5a4a30; font-size:0.95rem; letter-spacing:0.05rem;'>
-            Picassify — Built by Ali Faraz &nbsp;✦&nbsp; Powered by PyTorch & VGG19
-        </p>
-        <p style='font-family: Cormorant Garamond, serif; color:#3a2a10;
-                  font-size:0.85rem; margin-top:0.5rem;'>
-            Neural Style Transfer · Gatys et al. 2015
-        </p>
+    <div class='footer-bar'>
+        <div class='footer-left'>PICASSIFY</div>
+        <div class='footer-right'>
+            BUILT BY ALI FARAZ<br>
+            PYTORCH · VGG19 · STREAMLIT<br>
+            NEURAL STYLE TRANSFER · GATYS ET AL. 2015
+        </div>
     </div>
-""", unsafe_allow_html=True)
+""", unsafe_allow_html=True) 
