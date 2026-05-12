@@ -3,7 +3,6 @@ import torch.nn as nn
 import torch.optim as optim
 import torchvision.models as models
 import torch.nn.functional as F
-import copy
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
  
@@ -32,7 +31,7 @@ class VGG19Features(nn.Module):
         h5 = self.slice5(h4)
         return h1, h2, h3, h4, h5
  
- 
+
 def gram_matrix(features):
     batch, channels, height, width = features.size()
     features = features.view(channels, height * width)
