@@ -6,7 +6,7 @@ import numpy as np
 def load_img(image_path, size=512):
     image = Image.open(image_path).convert('RGB')
 
-    tranform = transforms.Compose([
+    transform = transforms.Compose([
         transforms.Resize((size, size)),
         transforms.ToTensor(),
         transforms.Normalize(
@@ -15,7 +15,7 @@ def load_img(image_path, size=512):
         )
     ])
 
-    image = tranform(image).unsqueeze(0)
+    image = transform(image).unsqueeze(0)
     return image
 
 def tensor_to_image(tensor):
