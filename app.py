@@ -458,7 +458,6 @@ if generate_btn:
     if not content_file or not style_file:
         st.error("ERROR — Both images required to proceed.")
     else:
-        # st.markdown("<div class='result-block'>", unsafe_allow_html=True)
         st.markdown("<div class='result-title'>GENERATING ARTWORK</div>", unsafe_allow_html=True)
 
         progress_bar = st.progress(0)
