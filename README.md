@@ -10,7 +10,7 @@ A professional-grade Computer Vision dashboard built with **Python** and **Strea
 ---
 
 ## 📺 Demo Preview
-![Picassify Demo](Picassify\assets\Picassify.mp4)
+![Picassify Demo](assets\Picassify.mp4)
 
 ---
 
