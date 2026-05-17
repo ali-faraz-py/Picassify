@@ -9,11 +9,6 @@ A professional-grade Computer Vision dashboard built with **Python** and **Strea
 
 ---
 
-## 📺 Demo Preview
-![Picassify Demo](assets/Picassifyy.gif)
-
----
-
 ## ✨ Features
 - **Neural Style Transfer:** Implements the landmark Gatys et al. algorithm to decouple and recombine content and style representations.
 - **VGG19 Feature Extraction:** Leverages a pre-trained 19-layer Convolutional Neural Network (CNN) to capture deep hierarchical features of artistic brushstrokes.
