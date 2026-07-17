@@ -23,9 +23,9 @@ def health_check():
 async def generate(
     content_image: UploadFile = File(...),
     style_image: UploadFile = File(...),
-    steps: int = Form(300),
+    steps: int = Form(150),
     style_weight: int = Form(1000000),
-    image_size: int = Form(256),
+    image_size: int = Form(192),
 ):
     content_tensor = load_image_from_upload(content_image.file, size=image_size)
     style_tensor = load_image_from_upload(style_image.file, size=image_size)
