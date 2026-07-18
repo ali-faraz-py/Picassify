@@ -1,7 +1,5 @@
-fastapi
-uvicorn[standard]
 torch
 torchvision
+streamlit
 Pillow
 numpy
-python-multipart
